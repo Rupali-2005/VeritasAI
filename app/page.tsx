@@ -18,8 +18,14 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleAnalyze = async () => {
+    if (activeTab === "search") {
+      // Navigate to search page with query
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
+      return
+    }
+    
     setIsLoading(true)
-    // Simulate API call
+    // Simulate API call for paste/url tabs
     await new Promise((resolve) => setTimeout(resolve, 2000))
     // Navigate to results page
     router.push("/results")
@@ -115,6 +121,8 @@ export default function Home() {
                       <Loader2 className="mr-2 size-5 animate-spin" />
                       Analyzing article...
                     </>
+                  ) : activeTab === "search" ? (
+                    "Search Articles"
                   ) : (
                     "Analyze Article"
                   )}
