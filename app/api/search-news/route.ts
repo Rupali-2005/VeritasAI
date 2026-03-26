@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { generateObject } from "ai"
+import { generateText } from "ai"
 import { createGroq } from "@ai-sdk/groq"
-import { z } from "zod"
 
 const groq = createGroq({
   apiKey: process.env.GROQ_KEY,
@@ -62,17 +61,8 @@ export async function GET(request: NextRequest) {
       description: article.description,
     }))
 
-    const { object: relevanceAnalysis } = await generateObject({
+    const { text } = await generateText({
       model: groq("llama-3.3-70b-versatile"),
-      schema: z.object({
-        rankedArticles: z.array(
-          z.object({
-            index: z.number().describe("The original index of the article"),
-            relevanceScore: z.number().min(0).max(10).describe("How relevant this article is to the search topic (0-10)"),
-            isRelevant: z.boolean().describe("Whether this article is actually about the search topic"),
-          })
-        ),
-      }),
       prompt: `You are analyzing news articles for relevance to the search topic: "${query}"
 
 Here are the articles to analyze:
@@ -83,8 +73,39 @@ For each article, determine:
 2. Whether it's actually about the topic or just mentions it tangentially
 
 Only mark articles as relevant (isRelevant: true) if they are genuinely about the topic, not just mentioning keywords.
-Rank them by relevance score.`,
+
+Respond ONLY with a valid JSON object in this exact format (no markdown, no explanation):
+{"rankedArticles":[{"index":0,"relevanceScore":8,"isRelevant":true},{"index":1,"relevanceScore":3,"isRelevant":false}]}`,
     })
+
+    // Parse the JSON response from Groq
+    let relevanceAnalysis: { rankedArticles: Array<{ index: number; relevanceScore: number; isRelevant: boolean }> }
+    try {
+      // Extract JSON from the response (handle potential markdown code blocks)
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        throw new Error("No JSON found in response")
+      }
+      relevanceAnalysis = JSON.parse(jsonMatch[0])
+    } catch {
+      // If parsing fails, return all articles with default scores
+      console.error("Failed to parse Groq response, returning unfiltered articles")
+      const fallbackArticles = validArticles.slice(0, 10).map((article, index) => ({
+        id: index,
+        title: article.title,
+        description: article.description,
+        source: article.source.name,
+        url: article.url,
+        imageUrl: article.urlToImage,
+        publishedAt: article.publishedAt,
+        relevanceScore: 7,
+      }))
+      return NextResponse.json({
+        articles: fallbackArticles,
+        totalFound: newsData.totalResults,
+        query,
+      })
+    }
 
     // Filter and sort articles based on Groq's analysis
     const relevantArticles = relevanceAnalysis.rankedArticles
@@ -92,6 +113,7 @@ Rank them by relevance score.`,
       .sort((a, b) => b.relevanceScore - a.relevanceScore)
       .map((r) => {
         const article = validArticles[r.index]
+        if (!article) return null
         return {
           id: r.index,
           title: article.title,
@@ -103,6 +125,7 @@ Rank them by relevance score.`,
           relevanceScore: r.relevanceScore,
         }
       })
+      .filter(Boolean)
 
     return NextResponse.json({
       articles: relevantArticles,
