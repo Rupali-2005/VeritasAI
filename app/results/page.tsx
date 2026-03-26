@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShieldAlert, ArrowLeft, AlertTriangle, TrendingUp, CheckCircle, XCircle, HelpCircle, FileText, MessageSquare, BookOpen, Scale } from "lucide-react"
 import Link from "next/link"
+import { GlossaryTermPopover } from "@/components/glossary-term"
 
 // Sample analysis data
 const analysisData = {
@@ -145,7 +146,11 @@ export default function ResultsPage() {
                       {technique.severity.toFixed(1)}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-foreground mb-1">{technique.name}</h4>
+                      <h4 className="font-semibold text-foreground mb-1">
+                        <GlossaryTermPopover term={technique.name}>
+                          {technique.name}
+                        </GlossaryTermPopover>
+                      </h4>
                       <p className="text-sm text-muted-foreground">{technique.explanation}</p>
                     </div>
                   </div>
