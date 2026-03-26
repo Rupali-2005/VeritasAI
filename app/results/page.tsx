@@ -69,11 +69,18 @@ export default function ResultsPage() {
               <ShieldAlert className="size-6" />
               <span className="font-semibold tracking-tight">VeritasAI</span>
             </Link>
-            <Link href="/reader">
-              <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
-                View Article
-              </Button>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/reader">
+                <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
+                  View Article
+                </Button>
+              </Link>
+              <Link href="/report">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Export Report
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
