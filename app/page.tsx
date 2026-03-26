@@ -1,22 +1,28 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ShieldAlert, Scale, FileText } from "lucide-react"
+import { ShieldAlert, Scale, FileText, Loader2 } from "lucide-react"
 
 export default function Home() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("paste")
   const [articleText, setArticleText] = useState("")
   const [articleUrl, setArticleUrl] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleAnalyze = () => {
-    // Analysis logic would go here
-    console.log("Analyzing:", { activeTab, articleText, articleUrl, searchQuery })
+  const handleAnalyze = async () => {
+    setIsLoading(true)
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // Navigate to results page
+    router.push("/results")
   }
 
   const getButtonDisabled = () => {
@@ -100,11 +106,18 @@ export default function Home() {
 
                 <Button 
                   onClick={handleAnalyze}
-                  disabled={getButtonDisabled()}
+                  disabled={getButtonDisabled() || isLoading}
                   className="mt-6 h-12 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
                   size="lg"
                 >
-                  Analyze Article
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 size-5 animate-spin" />
+                      Analyzing article...
+                    </>
+                  ) : (
+                    "Analyze Article"
+                  )}
                 </Button>
               </Tabs>
             </CardContent>

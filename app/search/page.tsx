@@ -57,10 +57,9 @@ export default function SearchPage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center gap-4 px-6 py-4">
-          <Link href="/">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+          <Link href="/" className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+            <ArrowLeft className="h-5 w-5" />
+            <span className="text-sm font-medium">Back to Home</span>
           </Link>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ShieldAlert, ArrowLeft, AlertTriangle, TrendingUp, CheckCircle, XCircle, HelpCircle, FileText, MessageSquare } from "lucide-react"
+import { ShieldAlert, ArrowLeft, AlertTriangle, TrendingUp, CheckCircle, XCircle, HelpCircle, FileText, MessageSquare, BookOpen, Scale } from "lucide-react"
 import Link from "next/link"
 
 // Sample analysis data
@@ -71,13 +71,21 @@ export default function ResultsPage() {
             </Link>
             <div className="flex items-center gap-3">
               <Link href="/reader">
-                <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
-                  View Article
+                <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10 gap-2">
+                  <BookOpen className="size-4" />
+                  Read Mode
+                </Button>
+              </Link>
+              <Link href="/compare">
+                <Button variant="outline" className="border-border text-foreground hover:bg-muted gap-2">
+                  <Scale className="size-4" />
+                  Compare
                 </Button>
               </Link>
               <Link href="/report">
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  Export Report
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+                  <FileText className="size-4" />
+                  Generate Report
                 </Button>
               </Link>
             </div>

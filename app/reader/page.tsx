@@ -167,16 +167,14 @@ export default function ReaderPage() {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+            <Link href="/results" className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
               <ArrowLeft className="size-5" />
-              <ShieldAlert className="size-6" />
-              <span className="font-semibold tracking-tight">VeritasAI</span>
+              <span className="text-sm font-medium">Back to Results</span>
             </Link>
-            <Link href="/results">
-              <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
-                View Full Analysis
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="size-6 text-primary" />
+              <span className="font-semibold tracking-tight text-foreground">VeritasAI</span>
+            </div>
           </div>
         </div>
       </header>

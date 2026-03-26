@@ -48,12 +48,13 @@ export default function ComparePage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
-          <Link href="/">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Link href="/results" className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
               <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
+              <span className="text-sm font-medium">Back to Results</span>
+            </Link>
+          </div>
           <div className="flex items-center gap-2">
             <Scale className="h-6 w-6 text-primary" />
             <h1 className="text-xl font-semibold text-foreground">Article Comparison</h1>
