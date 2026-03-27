@@ -2,17 +2,12 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
-  Search,
-  ArrowLeft,
-  Newspaper,
-  BookOpen,
-  BarChart3,
-  Loader2,
-  AlertCircle,
+  Search, ArrowLeft, Newspaper, BookOpen,
+  BarChart3, Loader2, AlertCircle,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -42,9 +37,19 @@ function formatTimeAgo(dateString: string): string {
   return date.toLocaleDateString()
 }
 
-export default function SearchPage() {
+// ── Fallback shown while searchParams resolves ──────────────────────────────
+function SearchFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  )
+}
+
+// ── Inner component — the ONLY place useSearchParams() is called ────────────
+function SearchContent() {
   const searchParams = useSearchParams()
-  const initialQuery = searchParams?.get("q") || ""
+  const initialQuery = searchParams?.get("q") ?? ""
 
   const [query, setQuery] = useState(initialQuery)
   const [searchedQuery, setSearchedQuery] = useState("")
@@ -64,11 +69,10 @@ export default function SearchPage() {
 
     try {
       const res = await fetch(`/api/search-news?q=${encodeURIComponent(q)}`)
-      const data = await res.json().catch(() => ({}))
+      const data: { articles?: Article[]; error?: string } =
+        await res.json().catch(() => ({}))
 
-      if (!res.ok) {
-        throw new Error(data?.error || "Failed to search news")
-      }
+      if (!res.ok) throw new Error(data?.error ?? "Failed to search news")
 
       setArticles(Array.isArray(data.articles) ? data.articles : [])
     } catch (err) {
@@ -80,21 +84,19 @@ export default function SearchPage() {
   }
 
   useEffect(() => {
-    if (initialQuery) {
-      handleSearch(initialQuery)
-    }
+    if (initialQuery) handleSearch(initialQuery)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery])
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch()
-  }
-
   return (
     <div className="min-h-screen bg-background">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center gap-4 px-6 py-4">
-          <Link href="/" className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity"
+          >
             <ArrowLeft className="h-5 w-5" />
             <span className="text-sm font-medium">Back to Home</span>
           </Link>
@@ -104,7 +106,7 @@ export default function SearchPage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="Search for news topics..."
               className="border-border bg-card pl-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
             />
@@ -120,6 +122,7 @@ export default function SearchPage() {
         </div>
       </header>
 
+      {/* ── Main ───────────────────────────────────────────────────────────── */}
       <main className="mx-auto max-w-4xl px-6 py-8">
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
@@ -140,11 +143,13 @@ export default function SearchPage() {
           </div>
         )}
 
-        {!hasSearched && !isLoading && (
+        {!hasSearched && !isLoading && !error && (
           <div className="flex flex-col items-center justify-center py-20">
             <Search className="h-12 w-12 text-muted-foreground/50 mb-4" />
             <p className="text-foreground font-medium">Search for a news topic</p>
-            <p className="text-sm text-muted-foreground mt-1">Enter a topic above to find relevant articles for analysis</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Enter a topic above to find relevant articles for analysis
+            </p>
           </div>
         )}
 
@@ -152,7 +157,9 @@ export default function SearchPage() {
           <div className="flex flex-col items-center justify-center py-20">
             <Newspaper className="h-12 w-12 text-muted-foreground/50 mb-4" />
             <p className="text-foreground font-medium">No relevant articles found</p>
-            <p className="text-sm text-muted-foreground mt-1">Try a different search term or broaden your query</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Try a different search term or broaden your query
+            </p>
           </div>
         )}
 
@@ -160,7 +167,9 @@ export default function SearchPage() {
           <>
             <div className="mb-6 flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Found <span className="font-medium text-foreground">{articles.length} relevant articles</span> for{" "}
+                Found{" "}
+                <span className="font-medium text-foreground">{articles.length} relevant articles</span>{" "}
+                for{" "}
                 <span className="font-medium text-primary">&quot;{searchedQuery}&quot;</span>
               </p>
             </div>
@@ -182,27 +191,48 @@ export default function SearchPage() {
                       </span>
                     </div>
 
-                    <h3 className="mb-2 text-lg font-semibold leading-snug text-foreground">{article.title}</h3>
-
-                    <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{article.description}</p>
+                    <h3 className="mb-2 text-lg font-semibold leading-snug text-foreground">
+                      {article.title}
+                    </h3>
+                    <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                      {article.description}
+                    </p>
 
                     <div className="flex gap-3">
-                      <Link href="/results">
-                        <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                      <Link
+                        href={`/results?id=${article.id}&q=${encodeURIComponent(searchedQuery)}`}
+                      >
+                        <Button
+                          size="sm"
+                          className="bg-primary text-primary-foreground hover:bg-primary/90"
+                        >
                           <BarChart3 className="mr-2 h-4 w-4" />
                           Analyze
                         </Button>
                       </Link>
 
-                      <Link href="/reader">
-                        <Button size="sm" variant="outline" className="border-border text-foreground hover:bg-secondary">
+                      <Link href={`/reader?id=${article.id}`}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-border text-foreground hover:bg-secondary"
+                        >
                           <BookOpen className="mr-2 h-4 w-4" />
                           Read Mode
                         </Button>
                       </Link>
 
-                      <a href={article.url} target="_blank" rel="noopener noreferrer" className="ml-auto">
-                        <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground">
+                      
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-auto"
+                      >
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-muted-foreground hover:text-foreground"
+                        >
                           View Original
                         </Button>
                       </a>
@@ -215,5 +245,14 @@ export default function SearchPage() {
         )}
       </main>
     </div>
+  )
+}
+
+// ── Page export — Suspense MUST wrap the component using useSearchParams() ──
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchFallback />}>
+      <SearchContent />
+    </Suspense>
   )
 }
