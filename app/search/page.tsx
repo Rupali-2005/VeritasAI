@@ -1,14 +1,22 @@
 "use client"
-export const dynamic = 'force-dynamic'
-export const revalidate=0
+
+export const dynamic = "force-dynamic"
 
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
+import Link from "next/link"
+import {
+  Search,
+  ArrowLeft,
+  Newspaper,
+  BookOpen,
+  BarChart3,
+  Loader2,
+  AlertCircle,
+} from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import Link from "next/link"
-import { Search, ArrowLeft, Newspaper, BookOpen, BarChart3, Loader2, AlertCircle } from "lucide-react"
 
 interface Article {
   id: number
@@ -36,8 +44,8 @@ function formatTimeAgo(dateString: string): string {
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
-  const initialQuery = searchParams.get("q") || ""
-  
+  const initialQuery = searchParams?.get("q") || ""
+
   const [query, setQuery] = useState(initialQuery)
   const [searchedQuery, setSearchedQuery] = useState("")
   const [articles, setArticles] = useState<Article[]>([])
@@ -46,8 +54,8 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false)
 
   const handleSearch = async (searchQuery?: string) => {
-    const q = searchQuery || query
-    if (!q.trim()) return
+    const q = (searchQuery ?? query).trim()
+    if (!q) return
 
     setIsLoading(true)
     setError(null)
@@ -55,14 +63,14 @@ export default function SearchPage() {
     setSearchedQuery(q)
 
     try {
-      const response = await fetch(`/api/search-news?q=${encodeURIComponent(q)}`)
-      const data = await response.json()
+      const res = await fetch(`/api/search-news?q=${encodeURIComponent(q)}`)
+      const data = await res.json().catch(() => ({}))
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to search news")
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to search news")
       }
 
-      setArticles(data.articles || [])
+      setArticles(Array.isArray(data.articles) ? data.articles : [])
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
       setArticles([])
@@ -71,18 +79,15 @@ export default function SearchPage() {
     }
   }
 
-  // Auto-search if query param is present
   useEffect(() => {
     if (initialQuery) {
       handleSearch(initialQuery)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [initialQuery])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch()
-    }
+    if (e.key === "Enter") handleSearch()
   }
 
   return (
@@ -93,6 +98,7 @@ export default function SearchPage() {
             <ArrowLeft className="h-5 w-5" />
             <span className="text-sm font-medium">Back to Home</span>
           </Link>
+
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -103,7 +109,8 @@ export default function SearchPage() {
               className="border-border bg-card pl-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
             />
           </div>
-          <Button 
+
+          <Button
             onClick={() => handleSearch()}
             disabled={isLoading || !query.trim()}
             className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -114,7 +121,6 @@ export default function SearchPage() {
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-8">
-        {/* Loading State */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
@@ -123,45 +129,33 @@ export default function SearchPage() {
           </div>
         )}
 
-        {/* Error State */}
         {error && !isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
             <AlertCircle className="h-8 w-8 text-destructive mb-4" />
             <p className="text-foreground font-medium">Something went wrong</p>
             <p className="text-sm text-muted-foreground mt-1">{error}</p>
-            <Button 
-              onClick={() => handleSearch()} 
-              variant="outline" 
-              className="mt-4"
-            >
+            <Button onClick={() => handleSearch()} variant="outline" className="mt-4">
               Try Again
             </Button>
           </div>
         )}
 
-        {/* Empty State - No Search Yet */}
         {!hasSearched && !isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
             <Search className="h-12 w-12 text-muted-foreground/50 mb-4" />
             <p className="text-foreground font-medium">Search for a news topic</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Enter a topic above to find relevant articles for analysis
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">Enter a topic above to find relevant articles for analysis</p>
           </div>
         )}
 
-        {/* No Results State */}
         {hasSearched && !isLoading && !error && articles.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
             <Newspaper className="h-12 w-12 text-muted-foreground/50 mb-4" />
             <p className="text-foreground font-medium">No relevant articles found</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Try a different search term or broaden your query
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">Try a different search term or broaden your query</p>
           </div>
         )}
 
-        {/* Results */}
         {!isLoading && !error && articles.length > 0 && (
           <>
             <div className="mb-6 flex items-center justify-between">
@@ -188,40 +182,27 @@ export default function SearchPage() {
                       </span>
                     </div>
 
-                    <h3 className="mb-2 text-lg font-semibold leading-snug text-foreground">
-                      {article.title}
-                    </h3>
+                    <h3 className="mb-2 text-lg font-semibold leading-snug text-foreground">{article.title}</h3>
 
-                    <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-                      {article.description}
-                    </p>
+                    <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{article.description}</p>
 
                     <div className="flex gap-3">
                       <Link href="/results">
-                        <Button
-                          size="sm"
-                          className="bg-primary text-primary-foreground hover:bg-primary/90"
-                        >
+                        <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
                           <BarChart3 className="mr-2 h-4 w-4" />
                           Analyze
                         </Button>
                       </Link>
+
                       <Link href="/reader">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-border text-foreground hover:bg-secondary"
-                        >
+                        <Button size="sm" variant="outline" className="border-border text-foreground hover:bg-secondary">
                           <BookOpen className="mr-2 h-4 w-4" />
                           Read Mode
                         </Button>
                       </Link>
+
                       <a href={article.url} target="_blank" rel="noopener noreferrer" className="ml-auto">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-muted-foreground hover:text-foreground"
-                        >
+                        <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground">
                           View Original
                         </Button>
                       </a>
