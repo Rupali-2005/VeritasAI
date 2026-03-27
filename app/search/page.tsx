@@ -6,8 +6,13 @@ import { Suspense, useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
-  Search, ArrowLeft, Newspaper, BookOpen,
-  BarChart3, Loader2, AlertCircle,
+  Search,
+  ArrowLeft,
+  Newspaper,
+  BookOpen,
+  BarChart3,
+  Loader2,
+  AlertCircle,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -37,7 +42,6 @@ function formatTimeAgo(dateString: string): string {
   return date.toLocaleDateString()
 }
 
-// ── Fallback shown while searchParams resolves ──────────────────────────────
 function SearchFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -46,7 +50,6 @@ function SearchFallback() {
   )
 }
 
-// ── Inner component — the ONLY place useSearchParams() is called ────────────
 function SearchContent() {
   const searchParams = useSearchParams()
   const initialQuery = searchParams?.get("q") ?? ""
@@ -90,7 +93,6 @@ function SearchContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center gap-4 px-6 py-4">
           <Link
@@ -122,7 +124,6 @@ function SearchContent() {
         </div>
       </header>
 
-      {/* ── Main ───────────────────────────────────────────────────────────── */}
       <main className="mx-auto max-w-4xl px-6 py-8">
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
@@ -168,9 +169,13 @@ function SearchContent() {
             <div className="mb-6 flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
                 Found{" "}
-                <span className="font-medium text-foreground">{articles.length} relevant articles</span>{" "}
+                <span className="font-medium text-foreground">
+                  {articles.length} relevant articles
+                </span>{" "}
                 for{" "}
-                <span className="font-medium text-primary">&quot;{searchedQuery}&quot;</span>
+                <span className="font-medium text-primary">
+                  &quot;{searchedQuery}&quot;
+                </span>
               </p>
             </div>
 
@@ -222,20 +227,20 @@ function SearchContent() {
                         </Button>
                       </Link>
 
-                      
-                        href={article.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-auto"
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="ml-auto text-muted-foreground hover:text-foreground"
+                        asChild
                       >
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-muted-foreground hover:text-foreground"
+                        <a
+                          href={article.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           View Original
-                        </Button>
-                      </a>
+                        </a>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -248,7 +253,6 @@ function SearchContent() {
   )
 }
 
-// ── Page export — Suspense MUST wrap the component using useSearchParams() ──
 export default function SearchPage() {
   return (
     <Suspense fallback={<SearchFallback />}>
